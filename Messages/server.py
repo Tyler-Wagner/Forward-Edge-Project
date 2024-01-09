@@ -1,21 +1,10 @@
 import socket
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
 import os
 
-def derive_key(password: bytes, salt: bytes) -> bytes:
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        salt=salt,
-        iterations=100000,
-        length=32,
-    )
-    key = kdf.derive(password)
-    return key
-
 def decrypt_message(key: bytes, iv: bytes, ciphertext: bytes) -> bytes:
-    cipher = Cipher(algorithms.AES(key), modes.CFB(iv))
+    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     decrypted_message = decryptor.update(ciphertext) + decryptor.finalize()
     return decrypted_message
@@ -33,11 +22,8 @@ while True:
     client_socket, addr = server_socket.accept()
     print(f"Accepted connection from {addr}")
 
-    salt = os.urandom(16)
-    password = b"your_secret_password"
-    key = derive_key(password, salt)
-
-    iv = os.urandom(16)
+    key = os.urandom(32)  # 32 bytes for AES-256
+    iv = os.urandom(16)   # 16 bytes for AES block size
 
     while True:
         encrypted_message = client_socket.recv(1024)
@@ -45,6 +31,6 @@ while True:
             break
 
         decrypted_message = decrypt_message(key, iv, encrypted_message)
-        print(f"Received: {decrypted_message.decode('utf-8')}")
+        print(f"Received: {decrypted_message}")
 
     client_socket.close()
