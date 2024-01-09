@@ -3,6 +3,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import hashes
 import os
+import random
+import string
 
 def derive_key(password: bytes, salt: bytes) -> bytes:
     kdf = PBKDF2HMAC(
@@ -33,11 +35,8 @@ key = derive_key(password, salt)
 iv = os.urandom(16)
 
 while True:
-    message = input("Enter message: ")
-    if not message:
-        break
+    # Generate a random message of length 10
+    message = ''.join(random.choice(string.ascii_letters) for _ in range(10))
 
     encrypted_message = encrypt_message(key, iv, message.encode('utf-8'))
     client_socket.send(encrypted_message)
-
-client_socket.close()
