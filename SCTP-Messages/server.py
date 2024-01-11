@@ -18,16 +18,23 @@ def start_sctp_server(port):
         client_sock, client_addr = sock.accept()
         print(f"Accepted connection from {client_addr}")
 
-        # Receive the message from the client
-        message = client_sock.sctp_recv(1024)
-        print(f"Received message: {message.decode('utf-8')}")
+        try:
+            while True:
+                # Receive the message from the client
+                data = client_sock.sctp_recv(1024)  # Receive the tuple
+                if data:
+                    message = data[0][0]  # Access the received data directly
+                    print(f"Received message: {message}")
 
-        # Send a response back to the client
-        response = b"Message received successfully!"
-        client_sock.sctp_send(response)
+                    # Send a response back to the client
+                    response = b"Message received successfully!"
+                    client_sock.sctp_send(response)
 
-        # Close the client socket
-        client_sock.close()
+        except ConnectionResetError:
+            print(f"Connection with {client_addr} closed by the client.")
+        finally:
+            # Close the client socket
+            client_sock.close()
 
 if __name__ == "__main__":
     server_port = 12345

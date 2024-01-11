@@ -27,8 +27,12 @@ def send_sctp_random_messages(server_ip, server_port, interval=1):
             print(f"Sent random message: {message.decode('utf-8')}")
 
             # Receive the response
-            response = sock.sctp_recv(1024)
-            print(f"Response from server: {response.decode('utf-8')}")
+            # Receive the response
+            response_tuple = sock.sctp_recv(1024)
+            if response_tuple and isinstance(response_tuple[0], bytes):
+                response = response_tuple[0]
+                print(f"Response from server: {response.decode('utf-8')}")
+
 
             # Wait for the specified interval before sending the next message
             time.sleep(interval)
@@ -42,7 +46,7 @@ def send_sctp_random_messages(server_ip, server_port, interval=1):
 
 if __name__ == "__main__":
     # Update these values with your server details
-    server_ip = "192.168.1.100"  # Replace with the actual IP address of the server
+    server_ip = "172.16.0.59"  # Replace with the actual IP address of the server
     server_port = 12345
 
     send_sctp_random_messages(server_ip, server_port)
