@@ -38,8 +38,10 @@ def derive_aes_key(shared_secret):
 def decrypt(ciphertext, key):
     # Use AES-256 decryption
     iv = ciphertext[:16]
-    ciphertext = ciphertext[16:]
-    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+    print(ciphertext)
+    print('iv d:', iv)
+    ciphertext = ciphertext[15:]
+    cipher = Cipher(algorithms.AES(key), modes.CFB8(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     message = decryptor.update(ciphertext) + decryptor.finalize()
     return message
@@ -65,7 +67,8 @@ def generate_key_exchange():
 def encrypt(message, key):
     # Use AES-256 encryption
     iv = os.urandom(16)
-    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+    print('iv e:', iv)
+    cipher = Cipher(algorithms.AES(key), modes.CFB8(iv), backend=default_backend())
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(message) + encryptor.finalize()
     return iv + ciphertext
@@ -73,7 +76,7 @@ def encrypt(message, key):
 
 def main():
     # Establish a SCTP socket connection
-    alice_socket = sctp.sctpsocket_udp(socket.AF_INET)
+    alice_socket = sctp.sctpsocket_tcp(socket.AF_INET)
     alice_socket.bind(('localhost', 12345))
     alice_socket.listen()
 

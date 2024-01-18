@@ -35,21 +35,25 @@ def derive_aes_key(shared_secret):
     return key
 
 def decrypt(ciphertext, key):
-    # Use AES-256 decryption
+    # Separate IV and ciphertext
     iv = ciphertext[:16]
     ciphertext = ciphertext[16:]
-    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+
+    # Use AES-256 decryption
+    cipher = Cipher(algorithms.AES(key), modes.CFB8(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     message = decryptor.update(ciphertext) + decryptor.finalize()
     return message
 
+
 def encrypt(message, key):
     # Use AES-256 encryption
     iv = os.urandom(16)
-    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+    cipher = Cipher(algorithms.AES(key), modes.CFB8(iv), backend=default_backend())
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(message) + encryptor.finalize()
     return iv + ciphertext
+
 
 def generate_key_exchange():
     p = 23
@@ -72,7 +76,7 @@ def generate_key_exchange():
 
 def main():
     # Establish a SCTP socket connection to Alice
-    bob_socket = sctp.sctpsocket_udp(socket.AF_INET)
+    bob_socket = sctp.sctpsocket_tcp(socket.AF_INET)
     bob_socket.connect(('localhost', 12345))
     print("Connected to Alice!")
 
